@@ -63,43 +63,43 @@
 ## Phase 3: Tool Implementation (Week 3-4)
 
 ### Tool: ti_search
-- [ ] **[T3-001]** Implement `ti_search` tool with MCP decorator
-- [ ] **[T3-002]** Generate query embedding
-- [ ] **[T3-003]** Search vector DB with filters (document_type, product_family)
-- [ ] **[T3-004]** Rank results by relevance score
-- [ ] **[T3-005]** Limit to max_results parameter
-- [ ] **[T3-006]** Return structured response (title, url, type, snippet, score)
+- [X] **[T3-001]** Implement `ti_search` tool with MCP decorator
+- [X] **[T3-002]** Generate query embedding
+- [X] **[T3-003]** Search vector DB with filters (document_type, product_family)
+- [X] **[T3-004]** Rank results by relevance score
+- [X] **[T3-005]** Limit to max_results parameter
+- [X] **[T3-006]** Return structured response (title, url, type, snippet, score)
 - [ ] **[T3-007]** Add input validation
 - [ ] **[T3-008]** Write unit tests
 
 ### Tool: component_lookup
-- [ ] **[T3-009]** Implement `component_lookup` tool
-- [ ] **[T3-010]** Exact match search by part_number
-- [ ] **[T3-011]** Fallback to prefix match
-- [ ] **[T3-012]** Return component details (name, family, datasheet_url, user_guide_url, features)
-- [ ] **[T3-013]** Handle invalid part numbers with error
+- [X] **[T3-009]** Implement `component_lookup` tool
+- [X] **[T3-010]** Exact match search by part_number
+- [X] **[T3-011]** Fallback to prefix match
+- [X] **[T3-012]** Return component details (name, family, datasheet_url, user_guide_url, features)
+- [X] **[T3-013]** Handle invalid part numbers with error
 - [ ] **[T3-014]** Write unit tests
 
 ### Tool: product_info
-- [ ] **[T3-015]** Implement `product_info` tool
-- [ ] **[T3-016]** Search TDA4 product database by name
-- [ ] **[T3-017]** Return product overview (description, applications, variants)
-- [ ] **[T3-018]** Return related products
+- [X] **[T3-015]** Implement `product_info` tool
+- [X] **[T3-016]** Search TDA4 product database by name
+- [X] **[T3-017]** Return product overview (description, applications, variants)
+- [X] **[T3-018]** Return related products
 - [ ] **[T3-019]** Write unit tests
 
 ### Tool: sdk_search
-- [ ] **[T3-020]** Implement `sdk_search` tool
-- [ ] **[T3-021]** Filter SDK docs by sdk_name
-- [ ] **[T3-022]** Semantic search within SDK documents
-- [ ] **[T3-023]** Return function/API results (name, description, parameters, example, url)
-- [ ] **[T3-024]** Filter by api_version if provided
+- [X] **[T3-020]** Implement `sdk_search` tool
+- [X] **[T3-021]** Filter SDK docs by sdk_name
+- [X] **[T3-022]** Semantic search within SDK documents
+- [X] **[T3-023]** Return function/API results (name, description, parameters, example, url)
+- [X] **[T3-024]** Filter by api_version if provided
 - [ ] **[T3-025]** Write unit tests
 
 ### Tool: ti_question
-- [ ] **[T3-026]** Implement `ti_question` tool (RAG stub for now)
-- [ ] **[T3-027]** Define response structure (answer, sources, confidence, related)
+- [X] **[T3-026]** Implement `ti_question` tool (RAG stub for now)
+- [X] **[T3-027]** Define response structure (answer, sources, confidence, related)
 - [ ] **[T3-028]** Write unit tests (mock RAG)
-- [ ] **[T3-029]** Integrate GLM 4.7 in Phase 4
+- [X] **[T3-029]** Integrate GLM 4.7 in Phase 4
 
 ---
 

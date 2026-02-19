@@ -1,0 +1,45 @@
+# MCP Server
+mcp:
+  name: "ti-docs-mcp"
+  version: "1.0.0"
+
+# Vector Store
+vector_store:
+  type: "chromadb"
+  path: "~/.ti-docs-mcp/index"
+  hnsw_space: "cosine"
+
+# Embeddings (Local Models)
+embeddings:
+  text_model: "all-MiniLM-L6-v2"
+  code_model: "microsoft/codebert-base"
+  device: "cpu"
+  batch_size: 100
+
+# GLM 4.7
+glm:
+  api_key: "${GLM_API_KEY}"
+  model: "glm-4.7"
+  timeout: 30
+
+# TI Documentation
+ti_docs:
+  product_family: "TDA4"
+  sitemap_url: "https://e2e.ti.com/sitemapindex-standard.xml"
+  crawl_delay: 4
+  max_results: 50
+
+# Chunking
+chunking:
+  text:
+    chunk_size: 512
+    chunk_overlap: 50
+  code:
+    chunk_size: 512
+    chunk_overlap: 50
+
+# Indexing
+indexing:
+  download_dir: "~/.ti-docs-mcp/docs"
+  cache_embeddings: true
+  incremental: true
