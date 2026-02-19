@@ -262,4 +262,16 @@ Sources:
 
 ---
 
+**Clarification Status:** All 19 questions answered ✅
+
+See **[clarify.md](./clarify.md)** for detailed decisions on:
+- Data sources (download + index locally)
+- Local embedding models (sentence-transformers)
+- Component data sources (scrape + parse)
+- SDK sources (online + GitHub + local)
+- Error handling strategies
+- Benchmark queries
+
+---
+
 **Version:** 1.1 | **Status:** Draft | **Created:** 2026-02-11 | **Updated:** 2026-02-19
