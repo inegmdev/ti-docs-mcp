@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ti-docs-mcp"
+version = "1.0.0"
+description = "TI Documentation MCP Server - Search Texas Instruments documentation with semantic queries"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    {name = "OpenClaw", email = "openclaw@example.com"}
+]
+
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "texas-instruments",
+    "documentation",
+    "semantic-search",
+    "rag",
+    "glm"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Scientific/Engineering :: Embedded Systems",
+]
+
+dependencies = [
+    "mcp>=0.9.0",
+    "openai>=1.0.0",
+    "httpx>=0.24.0",
+    "beautifulsoup4>=4.12.0",
+    "pypdf2>=3.0.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "mypy>=1.7.0",
+]
+
+[project.scripts]
+# Development scripts
+dev = "pytest"
+
+[project.gui-scripts]
+# MCP server entry point
+ti-docs-mcp = "ti_docs_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/openclaw/ti-docs-mcp"
+Documentation = "https://github.com/openclaw/ti-docs-mcp#readme"
+Repository = "https://github.com/openclaw/ti-docs-mcp"
+
+[tool.setuptools]
+packages = ["ti_docs_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*"]
+branch = true
