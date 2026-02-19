@@ -36,6 +36,16 @@ An MCP server that exposes tools for:
 
 The server acts as a bridge between AI models and TI's documentation ecosystem.
 
+**Key Technical Decisions:**
+- **Local Embeddings:** Uses `sentence-transformers` for offline privacy and zero API costs
+- **Vector Database:** ChromaDB for fast, lightweight semantic search
+- **RAG Strategy:** Optimized chunking per data type (HTML, PDF, code)
+- **Models:**
+  - Text: `all-MiniLM-L6-v2` (fast, 384 dims) or `all-mpnet-base-v2` (better accuracy, 768 dims)
+  - Code: `microsoft/codebert-base` (code-aware embeddings)
+
+See **[RAG_STRATEGY.md](../../RAG_STRATEGY.md)** for detailed implementation details.
+
 ---
 
 ## Core Capabilities
@@ -252,4 +262,16 @@ Sources:
 
 ---
 
-**Version:** 1.0.0 | **Status:** Draft | **Created:** 2026-02-11
+**Clarification Status:** All 19 questions answered ✅
+
+See **[clarify.md](./clarify.md)** for detailed decisions on:
+- Data sources (download + index locally)
+- Local embedding models (sentence-transformers)
+- Component data sources (scrape + parse)
+- SDK sources (online + GitHub + local)
+- Error handling strategies
+- Benchmark queries
+
+---
+
+**Version:** 1.1 | **Status:** Draft | **Created:** 2026-02-11 | **Updated:** 2026-02-19

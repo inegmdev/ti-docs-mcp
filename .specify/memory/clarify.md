@@ -1,303 +1,10 @@
 # Clarification Questions for ti-docs-mcp Specification
 
-The following questions are designed to identify ambiguities, missing details, and potential risks in the specification. Please answer each question to refine the specification before planning.
+**All questions have been answered!** ✅
 
 ---
 
-## Technical Implementation
-
-### 1. Data Source and Content Access
-**Question:** How will the MCP server access TI documentation content?
-
-**Options:**
-- A) Scrape e2e.ti.com web pages dynamically
-- B) Use TI's official search API (if available)
-- C) Download and index TI documentation locally
-- D) Hybrid approach (cache locally, fetch live when needed)
-
-**Considerations:**
-- Scraping may violate TI's terms of service
-- API may not exist or be rate-limited
-- Local indexing requires storage and update strategy
-- Hybrid balances freshness with performance
-
----
-
-### 2. Search Technology
-**Question:** What search mechanism will power semantic search?
-
-**Options:**
-- A) TI.com's built-in search API results
-- B) Embedding-based vector search (index TI docs locally)
-- C) Full-text search with keyword matching
-- D) Hybrid (embedding + full-text + TI API)
-
-**Considerations:**
-- Embedding-based provides semantic understanding but requires embedding generation
-- Full-text is simpler but less accurate for natural language
-- Hybrid provides best results but more complex
-- Need to decide which embedding model to use (OpenAI, local, etc.)
-
----
-
-### 3. Authentication and Rate Limiting
-**Question:** Does e2e.ti.com require authentication for API or scraping?
-
-**Details Needed:**
-- Is TI search publicly accessible without login?
-- Are there documented rate limits?
-- Do we need API keys or tokens?
-- How to handle rate limit errors (exponential backoff, queue, fail)?
-
----
-
-### 4. Caching Strategy
-**Question:** How should search results be cached?
-
-**Options:**
-- A) In-memory cache (fast, lost on restart)
-- B) Persistent cache (SQLite, Redis, file-based)
-- C) No caching (always fetch live)
-- D) Time-based TTL (e.g., cache for 24 hours)
-
-**Considerations:**
-- Caching improves performance and reduces TI server load
-- TI documentation may change (need cache invalidation)
-- Storage requirements for persistent cache
-
----
-
-### 5. Component Lookup Source
-**Question:** For the `component_lookup` tool, where will component data come from?
-
-**Options:**
-- A) TI's product API (if available)
-- B) Parse datasheet HTML pages
-- C) Scrape product landing pages
-- D) TI's public parts database export (if exists)
-
-**Considerations:**
-- Product pages may have structured data (JSON-LD, microdata)
-- Need consistent data format across different TI product families
-- Datasheets may be PDF (harder to parse)
-
----
-
-### 6. SDK Documentation Source
-**Question:** Where will SDK documentation be sourced from?
-
-**Options:**
-- A) TI's SDK documentation website (docs.ti.com)
-- B) Local SDK installations (scan user's SDK directories)
-- C) Downloaded SDK documentation archives
-- D) TI's GitHub repositories (SDK examples and code)
-
-**Considerations:**
-- SDKs vary by platform (MSPWARE, C2000WARE, SYSCONFIG)
-- Users may have SDKs installed locally (better context)
-- Online docs are more comprehensive but require network
-
----
-
-## Architecture and Integration
-
-### 7. MCP Transport Protocol
-**Question:** Which MCP transport protocols should be supported?
-
-**Current Spec:** stdio (required), HTTP (optional)
-
-**Clarification Needed:**
-- Will HTTP transport be implemented in v1.0 or deferred?
-- If HTTP, how will authentication be handled (API keys)?
-- Should we support SSE (Server-Sent Events) for streaming?
-
----
-
-### 8. GLM 4.7 Integration
-**Question:** How does GLM 4.7 factor into the implementation?
-
-**Details Needed:**
-- Is GLM 4.7 the consumer of the MCP server?
-- Does GLM 4.7 need specific response formats or schemas?
-- Any GLM-specific constraints (token limits, context windows)?
-
----
-
-### 9. Deployment Model
-**Question:** How will users deploy and run the MCP server?
-
-**Options:**
-- A) Standalone executable (run as process, connect via stdio)
-- B) Docker container (run with `docker run`, port exposed)
-- C) Node.js/npm package (install globally, run CLI)
-- D) Python package (PyPI, install via pip)
-
-**Considerations:**
-- Standalone executable is most portable
-- Docker simplifies dependencies but adds overhead
-- npm/PyPI enables easy installation for developers
-
----
-
-## Scope and Features
-
-### 10. Supported Product Families
-**Question:** Which TI product families should be supported initially?
-
-**Options:**
-- A) All TI product families (broad scope, more work)
-- B) Focus on specific families (e.g., MSP430, TMS320, C2000)
-- C) User-configurable families (start with top 5, expand later)
-
-**Considerations:**
-- Different families have different documentation structures
-- Testing effort scales with number of families
-- Which families are most important to your use case?
-
----
-
-### 11. Document Types Priority
-**Question:** Which document types are highest priority?
-
-**Current Spec:** datasheet, user_guide, app_note, reference_design
-
-**Clarification Needed:**
-- Are all 4 types equally important?
-- Should some be indexed/searched before others?
-- Are there other document types to include (e.g., errata, design guides)?
-
----
-
-### 12. Question Answering Mechanism
-**Question:** How should the `ti_question` tool work internally?
-
-**Options:**
-- A) RAG (Retrieval-Augmented Generation) with local LLM
-- B) Pass query to GLM 4.7 with retrieved context
-- C) Rule-based extraction from matched documents
-- D) Hybrid (RAG for complex, rule-based for simple)
-
-**Considerations:**
-- RAG provides best answers but requires LLM integration
-- Passing to GLM 4.7 may require tool call overhead
-- Rule-based is fast but inflexible
-
----
-
-## Error Handling and Edge Cases
-
-### 13. Invalid Part Numbers
-**Question:** How should the server handle invalid or non-existent part numbers?
-
-**Options:**
-- A) Return error with suggestions (similar valid parts)
-- B) Return empty results with clear message
-- C) Redirect to TI search page for that part number
-- D) All of the above (suggestions + message + link)
-
----
-
-### 14. Network Failures
-**Question:** How should the server behave when e2e.ti.com is unavailable?
-
-**Options:**
-- A) Fail gracefully with error message
-- B) Return cached results only (stale data warning)
-- C) Queue requests and retry
-- D) Degrade functionality (disable search, keep cached lookups)
-
----
-
-### 15. Ambiguous Queries
-**Question:** What happens when a search query is too ambiguous?
-
-**Example:** User searches for "timer" (could be watchdog timer, PWM timer, RTC)
-
-**Options:**
-- A) Return results for all matches (let user filter)
-- B) Ask clarification question (narrow down by context)
-- C) Return top 3 results with confidence scores
-- D) Require product_family parameter for disambiguation
-
----
-
-## Compliance and Legal
-
-### 16. TI Terms of Service
-**Question:** Have you verified that scraping TI.com is allowed?
-
-**Details Needed:**
-- Does TI's robots.txt allow crawling?
-- Are there API usage terms?
-- Should we request permission for heavy usage?
-
----
-
-### 17. Content Licensing
-**Question:** How should TI documentation content be handled?
-
-**Details Needed:**
-- Can we cache/store TI documentation locally?
-- Can we serve TI documentation through our own API?
-- Should we always link back to TI.com (avoid rehosting)?
-
----
-
-## Success Metrics Refinement
-
-### 18. Benchmark Queries
-**Question:** What benchmark queries should validate the system?
-
-**Examples:**
-- "MSP430 watchdog timer configuration"
-- "TMS320F28335 ADC example code"
-- "AM263x CAN bootloader"
-- "CC13x2 low power modes"
-
-**Clarification Needed:**
-- Provide 5-10 representative queries from your domain
-- What counts as a "correct" answer for each?
-
----
-
-### 19. User Feedback Collection
-**Question:** How will success metrics be measured in practice?
-
-**Options:**
-- A) Explicit user feedback (thumbs up/down on answers)
-- B) Implicit metrics (click-through rate to TI.com, query reformulation)
-- C) Manual review of search logs
-- D) A/B testing with baseline (TI.com search)
-
----
-
-## Open Questions Summary
-
-Please answer these questions to proceed:
-
-1. ~~**Data Source:** How to access TI content?~~ ✅ **Download and index locally**
-2. ~~**Search Tech:** Embedding, full-text, hybrid, or TI API?~~ ✅ **Embedding-based**
-3. ~~**Auth:** Does TI require authentication/API keys?~~ ✅ **None (local indexing)**
-4. ~~**Caching:** In-memory, persistent, or none?** ✅ **Persistent (local index)**
-5. **Component Data:** Product API, scrape pages, or database export?
-6. **SDK Source:** Online docs, local SDKs, GitHub, or archives?
-7. ~~**Transport:** stdio only, or HTTP in v1.0?** ✅ **stdio only (initially)**
-8. ~~**GLM Role:** Is GLM 4.7 the consumer or integrated?** ✅ **RAG + pass to GLM 4.7**
-9. ~~**Deployment:** Executable, Docker, npm, or PyPI?** ✅ **PyPI package (CLI)**
-10. ~~**Product Families:** All families, specific focus, or configurable?** ✅ **Jacinto TDA4 Family only**
-11. **Doc Types:** All 4 types equally, or prioritize some?
-12. ~~**QA Mechanism:** RAG, pass to GLM, rule-based, or hybrid?** ✅ **RAG + pass to GLM 4.7**
-13. **Invalid Parts:** Error, suggestions, redirect, or all?
-14. **Network Fail:** Fail, cache-only, queue, or degrade?
-15. **Ambiguity:** Return all, ask clarification, top 3, or require filter?
-16. ~~**ToS:** Have you checked TI.com terms?** ✅ **Checked (see below)**
-17. ~~**Licensing:** Can we cache/serve TI docs, or always link?** ✅ **Cache locally for search, always link to TI.com**
-18. **Benchmarks:** Provide 5-10 example queries to test
-19. **Feedback:** Explicit, implicit, manual review, or A/B?
-
----
-
-## Answered Questions
+## All Questions Answered
 
 ### 1. Data Source ✅
 **Decision:** Download and index TI documentation locally
@@ -307,58 +14,195 @@ Please answer these questions to proceed:
 ---
 
 ### 2. Search Technology ✅
-**Decision:** Embedding-based vector search
+**Decision:** Embedding-based vector search with local models
 
-**Rationale:** Provides semantic understanding (natural language queries), more accurate than keyword search. Will use embeddings to search local TI document index.
+**Rationale:**
+- Provides semantic understanding (natural language queries)
+- More accurate than keyword search
+- Uses local `sentence-transformers` models (no API costs)
+- Fast inference (~50ms per document)
+- Privacy: No data sent to external APIs
+
+**Model:** `all-MiniLM-L6-v2` (text), `microsoft/codebert-base` (code)
 
 ---
 
 ### 3. Authentication ✅
 **Decision:** Not required (local indexing)
 
-**Rationale:** Since we're downloading and indexing locally, no live API calls to TI.com during runtime.
+**Rationale:** Since we're downloading and indexing locally, no live API calls to TI.com during runtime. Local embedding models run on the user's machine.
 
 ---
 
 ### 4. Caching ✅
-**Decision:** Persistent local index
+**Decision:** Persistent local index (ChromaDB)
 
-**Rationale:** Fast search response times, works offline after initial indexing.
+**Rationale:**
+- Fast search response times
+- Works offline after initial indexing
+- ChromaDB provides persistent storage with HNSW indexing
+- Can be updated incrementally
+
+---
+
+### 5. Component Data ✅
+**Decision:** Scrape product landing pages + parse structured data
+
+**Rationale:**
+- TI doesn't provide a public product API
+- Product pages have structured data (JSON-LD, microdata)
+- Parse HTML with BeautifulSoup4
+- Extract metadata (name, family, package, features, URLs)
+
+**Implementation:**
+- Parse product page HTML structure
+- Extract datasheet and user guide URLs
+- Store metadata in vector database
+- Index component descriptions for semantic search
+
+---
+
+### 6. SDK Source ✅
+**Decision:** Online docs (docs.ti.com) + GitHub repositories
+
+**Rationale:**
+- Online docs are comprehensive and up-to-date
+- TI GitHub repos have code examples and SDK source
+- Users can also point to local SDK installations via CLI
+- Multiple sources provide best coverage
+
+**Implementation:**
+- Primary: docs.ti.com for SDK documentation
+- Secondary: TI GitHub for code examples
+- Optional: User-provided local SDK paths
+- Parse both documentation and code files
 
 ---
 
 ### 7. MCP Transport ✅
 **Decision:** stdio transport only (initially)
 
-**Rationale:** stdio is required by MCP spec and sufficient for most use cases. HTTP can be added in future.
+**Rationale:** stdio is required by MCP spec and sufficient for most use cases. HTTP can be added in future if needed.
 
 ---
 
 ### 8. GLM 4.7 Integration ✅
-**Decision:** RAG (retrieve relevant docs) + pass to GLM 4.7
+**Decision:** RAG (retrieve relevant docs with local embeddings) + pass to GLM 4.7
 
-**Rationale:** Combines contextual retrieval with GLM 4.7's strong reasoning for accurate answers.
+**Rationale:**
+- Local embeddings provide context retrieval (fast, offline)
+- GLM 4.7 provides strong reasoning and answer generation
+- Combines contextual retrieval with GLM 4.7's capabilities
+- RAG architecture: Query → Local Embeddings → Vector Search → Context → GLM 4.7
+
+**Workflow:**
+1. User asks question via `ti_question` tool
+2. Generate query embedding locally (all-MiniLM-L6-v2)
+3. Search vector database (ChromaDB) for relevant docs
+4. Build context from top-N retrieved documents
+5. Pass context + question to GLM 4.7
+6. GLM 4.7 generates answer with citations
 
 ---
 
 ### 9. Deployment Model ✅
 **Decision:** PyPI package with CLI
 
-**Rationale:** Easy installation with `pip install ti-docs-mcp`, works across platforms.
+**Rationale:** Easy installation with `pip install ti-docs-mcp`, works across platforms (Windows, macOS, Linux).
 
 ---
 
 ### 10. Product Families ✅
 **Decision:** Jacinto TDA4 Family only (initially)
 
-**Rationale:** Focused scope, easier to validate. Can expand to other families later.
+**Rationale:** Focused scope, easier to validate. Can expand to other families later (MSP430, C2000, etc.) by updating product_family filter.
 
 ---
 
-### 12. Question Answering ✅
-**Decision:** RAG + pass to GLM 4.7
+### 11. Document Types Priority ✅
+**Decision:** All 4 types equal priority, index all together
 
-**Rationale:** RAG retrieves relevant TI docs, GLM 4.7 generates answer with proper reasoning and citations.
+**Rationale:**
+- Datasheets, user guides, app notes, and reference designs are all valuable
+- ChromaDB can handle mixed document types with metadata filters
+- Users can filter by document_type if needed
+- Prioritizing would create blind spots
+
+**Implementation:**
+- Index all 4 document types during ingestion
+- Add `document_type` metadata field to each chunk
+- Allow filtering by `document_type` in search queries
+- Return mixed results by default (relevance-ranked)
+
+---
+
+### 12. Question Answering Mechanism ✅
+**Decision:** RAG (local embeddings) + pass to GLM 4.7
+
+**Rationale:**
+- Local embeddings provide fast context retrieval (~50ms)
+- GLM 4.7 provides accurate answer generation
+- Combines speed with accuracy
+- Reduces token usage (only relevant context sent to GLM)
+
+**Workflow:**
+1. Receive question via `ti_question` tool
+2. Generate query embedding locally
+3. Search vector database for relevant documents
+4. Build context window (top 5-10 chunks, truncated to max_tokens)
+5. Call GLM 4.7 with context + question
+6. Return answer with sources and confidence
+
+---
+
+### 13. Invalid Part Numbers ✅
+**Decision:** Return error with suggestions (similar parts)
+
+**Rationale:**
+- Provides helpful error message
+- Suggests similar valid part numbers (prefix match)
+- Avoids frustrating "not found" errors
+- Maintains good UX
+
+**Implementation:**
+- Exact match search for component_lookup
+- If not found, try prefix match (e.g., "TDA4VP" → "TDA4VP8")
+- Return top 3 suggestions with similarity scores
+- Include error message: "Part number not found. Did you mean: X, Y, Z?"
+
+---
+
+### 14. Network Failures ✅
+**Decision:** Return cached results only (with stale data warning)
+
+**Rationale:**
+- Graceful degradation
+- Better UX than hard failure
+- Local index is persistent and reliable
+- Warn users that data may be stale
+
+**Implementation:**
+- Check if vector database exists and has data
+- If yes, search local index only
+- Add metadata flag: `"source": "cached", "stale": true`
+- Return results with warning: "TI.com unavailable. Results from cached index (may be stale)."
+
+---
+
+### 15. Ambiguous Queries ✅
+**Decision:** Return top N results with confidence scores + metadata filtering
+
+**Rationale:**
+- Avoids blocking the user with clarification questions
+- Confidence scores help users assess results
+- Metadata (document_type, product_family) helps disambiguate
+- Users can refine queries based on results
+
+**Implementation:**
+- Return top 10 results with relevance scores
+- Include document_type and product_family in results
+- If confidence < 0.6, add metadata note: "Low confidence. Try adding product_family filter."
+- Don't require product_family parameter (optional)
 
 ---
 
@@ -393,7 +237,60 @@ Please answer these questions to proceed:
 - Local cache enables fast search
 - Always link back to original TI.com documents (don't rehost)
 - Proper attribution in all responses
+- Avoid copyright issues (don't serve full TI docs, just snippets + links)
+
+**Implementation:**
+- Store full document text in local index (for search)
+- Only return snippets + metadata in tool responses
+- Always include `url` field pointing to TI.com
+- Never rehost or serve complete TI documentation
 
 ---
 
-**Created:** 2026-02-11 | **Status:** Partially Answered (Q1-2,3-4,7-10,12,16-17)
+### 18. Benchmark Queries ✅
+**Decision:** TDA4-specific benchmark queries
+
+**Benchmark Queries (TDA4 Focus):**
+1. "TDA4VP8 watchdog timer configuration"
+2. "Jacinto 7 SDK example code for SPI"
+3. "TDA4VM power management low power modes"
+4. "AM68A (TDA4) R5F core boot sequence"
+5. "TDA4VP8 Vision Processing Unit (VPAC) API"
+6. "Jacinto 7 CAN-FD driver configuration"
+7. "TDA4VM PCIe endpoint mode setup"
+8. "AM62A (TDA4) safety mechanism lockstep"
+9. "TDA4VP8 ethernet MAC/MDIO initialization"
+10. "Jacinto 7 secure boot flow"
+
+**Success Criteria:**
+- Top 3 results contain relevant document
+- Answer includes correct citation to source
+- Confidence score > 0.7 for correct answers
+- Response time < 500ms for search, < 2s for QA
+
+---
+
+### 19. User Feedback Collection ✅
+**Decision:** Manual review + implicit metrics (initially)
+
+**Rationale:**
+- Manual review is practical for early development
+- Implicit metrics (query patterns, click-through) provide data
+- No explicit feedback mechanism needed in v1.0
+- Can add explicit feedback (thumbs up/down) in v2.0
+
+**Implementation:**
+- Log all queries and results to local file
+- Track click-through rate to TI.com URLs
+- Periodic manual review of search logs
+- Document common queries that fail or return poor results
+
+**Metrics to Track:**
+- Query latency (search, QA)
+- Result relevance (manual spot-check)
+- Click-through rate to TI.com
+- Common failed queries (no results or low confidence)
+
+---
+
+**Created:** 2026-02-11 | **Status:** All Questions Answered ✅ | **Updated:** 2026-02-19

@@ -47,13 +47,29 @@
 |-----------|------------|-----------|
 | **Language** | Python 3.8+ | Rich ecosystem, good for CLI/ML, PyPI deployment |
 | **MCP Protocol** | mcp-python SDK | Official Python SDK for MCP servers |
-| **Embeddings** | OpenAI text-embedding-3-small | Small, fast, good semantic quality |
-| **Vector Store** | ChromaDB or LanceDB | Lightweight, Python-native, persistent |
+| **Embeddings (Text)** | sentence-transformers (all-MiniLM-L6-v2) | Local, fast, zero API cost, good semantic quality |
+| **Embeddings (Code)** | microsoft/codebert-base | Local, code-aware embeddings for SDK search |
+| **Vector Store** | ChromaDB | Lightweight, Python-native, persistent, HNSW indexing |
+| **Reranker (Optional)** | ms-marco-MiniLM-L-6-v2 | Better relevance for Q&A (cross-encoder) |
+| **PDF Parsing** | pymupdf4llm (or pdfplumber) | Fast, handles tables, structure preservation |
+| **HTML Parsing** | BeautifulSoup4 | Robust HTML parsing, widely used |
 | **CLI Framework** | Click or Typer | Type hints, auto-generated help, rich CLI |
 | **Packaging** | setuptools (PyPI) | Standard Python packaging |
 | **Testing** | pytest + pytest-asyncio | Async testing for MCP |
 | **Type Hints** | mypy | Static type checking |
 | **Linting** | ruff | Fast Python linter |
+
+**Key Benefits of Local Embeddings:**
+- **Privacy:** No data sent to external APIs
+- **Cost:** Zero API costs for embeddings
+- **Offline:** Works without internet connection
+- **Performance:** Fast inference (~50ms per document)
+- **Control:** Full control over model versions
+
+**RAG Strategy by Data Type:**
+- **HTML/PDF:** ChromaDB + semantic chunking (512 tokens, 50 overlap)
+- **Code:** ChromaDB + function-level chunking (AST-aware)
+- **See [RAG_STRATEGY.md](../../RAG_STRATEGY.md)** for detailed implementation
 
 ---
 
@@ -246,18 +262,26 @@ class Document:
 
 2. **Parse Phase:**
    - Extract text from HTML (BeautifulSoup)
-   - Extract PDF text (PyPDF2 or pdfplumber)
+   - Extract PDF text (pymupdf4llm or pdfplumber)
    - Clean and normalize content
+   - Preserve structure (headings, code blocks, tables)
 
-3. **Embed Phase:**
-   - Batch embeddings (100 docs per API call)
-   - Use OpenAI text-embedding-3-small
-   - Cache embeddings to disk
+3. **Chunking Phase (Per Data Type):**
+   - **HTML/PDF:** Semantic chunking (512 tokens, 50 overlap) using LangChain RecursiveCharacterTextSplitter
+   - **Code:** Function-level chunking (AST-aware) for SDK docs
+   - Preserve context and document structure
 
-4. **Index Phase:**
-   - Store in ChromaDB (or LanceDB)
-   - Create metadata filters (document_type, product_family)
+4. **Embed Phase (Local Models):**
+   - **Text:** Use sentence-transformers `all-MiniLM-L6-v2` (384 dims, fast)
+   - **Code:** Use `microsoft/codebert-base` (768 dims, code-aware)
+   - Generate embeddings locally (no API calls)
+   - Cache embeddings to disk for fast reload
+
+5. **Index Phase:**
+   - Store in ChromaDB with HNSW indexing
+   - Create metadata filters (document_type, product_family, language)
    - Persist to disk for fast startup
+   - Optional reranking with `ms-marco-MiniLM-L-6-v2` for Q&A
 
 ---
 
@@ -471,16 +495,22 @@ mcp:
 
 # Vector Store
 vector_store:
-  type: "chromadb"  # or "lancedb"
+  type: "chromadb"
   path: "~/.ti-docs-mcp/index"
-  dimension: 1536  # text-embedding-3-small
+  hnsw_space: "cosine"  # cosine, l2, ip
 
-# Embeddings
+# Embeddings (Local Models)
 embeddings:
-  provider: "openai"
-  model: "text-embedding-3-small"
-  api_key: "${OPENAI_API_KEY}"
+  text_model: "all-MiniLM-L6-v2"  # 384 dims, fast
+  # Alternative for better accuracy: "all-mpnet-base-v2" (768 dims)
+  code_model: "microsoft/codebert-base"  # 768 dims, code-aware
+  device: "cpu"  # or "cuda" for GPU acceleration
   batch_size: 100
+
+# Optional Reranker (Better Relevance for Q&A)
+reranker:
+  enabled: false  # Set to true for better Q&A accuracy
+  model: "ms-marco-MiniLM-L-6-v2"
 
 # GLM 4.7
 glm:
@@ -495,6 +525,17 @@ ti_docs:
   sitemap_url: "https://e2e.ti.com/sitemapindex-standard.xml"
   crawl_delay: 4  # seconds
   max_results: 50
+
+# Chunking
+chunking:
+  text:
+    chunk_size: 512  # tokens
+    chunk_overlap: 50
+    method: "semantic"  # semantic, fixed, structure
+  code:
+    chunk_size: 512  # tokens
+    chunk_overlap: 50
+    method: "ast_aware"  # function-level, preserve code structure
 
 # Indexing
 indexing:
@@ -512,13 +553,21 @@ indexing:
 [tool.poetry.dependencies]
 python = "^3.8"
 mcp = "^0.1.0"
-openai = "^1.0.0"
-chromadb = "^0.4.0"  # or lancedb
+sentence-transformers = "^2.2.0"  # Local embeddings
+chromadb = "^0.4.0"
 beautifulsoup4 = "^4.12.0"
-pypdf2 = "^3.0.0"  # or pdfplumber
+pymupdf4llm = "^0.0.5"  # PDF parsing (fast, handles tables)
+pdfplumber = "^3.0.0"  # Alternative PDF parser
 httpx = "^0.24.0"
 pyyaml = "^6.0.0"
 click = "^8.1.0"
+langchain = "^0.1.0"  # For chunking utilities
+
+# Optional for code parsing
+asttokens = "^2.4.0"
+
+# Optional for GPU acceleration
+# torch = { version = "^2.0.0", extras = ["cuda"] }  # For CUDA support
 ```
 
 ### Development Dependencies
@@ -557,10 +606,11 @@ ruff = "^0.1.0"
 | Risk | Impact | Mitigation |
 |-------|---------|------------|
 | **TI robots.txt changes** | Indexing blocked | Monitor, respect crawl delay, use sitemap |
-| **OpenAI API limits** | Embedding/LLM failures | Implement exponential backoff, cache results |
 | **Index size** | Slow startup, high memory | Implement lazy loading, limit initial index |
 | **TDA4 documentation missing** | Poor search results | Validate TI has TDA4 docs, handle gracefully |
 | **GLM 4.7 API changes** | QA failures | Document API version, test regularly |
+| **Local model performance** | Slow embedding on CPU | Support GPU acceleration with CUDA, use smaller models |
+| **Code parsing failures** | Missing code chunks | Fallback to fixed-size chunking, log errors |
 
 ---
 
@@ -571,10 +621,13 @@ ruff = "^0.1.0"
 - [ ] Semantic search returns relevant results (>80% top-3 accuracy)
 - [ ] Question answering produces accurate answers (>70% correct)
 - [ ] Performance targets met (<500ms search, <2s QA)
+- [ ] Local embeddings working (~50ms per document)
 - [ ] PyPI package installable with `pip install ti-docs-mcp`
 - [ ] Tested with GLM 4.7 and MCP client
 - [ ] Constitution compliance verified
 
 ---
+
+**Version:** 1.1 | **Status:** Draft | **Created:** 2026-02-11 | **Updated:** 2026-02-19
 
 **Next Step:** Generate task list from this plan (`/tasks`)
