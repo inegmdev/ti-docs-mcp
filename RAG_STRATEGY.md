@@ -180,9 +180,9 @@ splitter = RecursiveCharacterTextSplitter(
 
 **Implementation:**
 ```python
-from sentence_transformers import SentenceSplitter
+from langchain.text_splitter import SentenceTransformersTokenTextSplitter
 
-splitter = SentenceSplitter(
+splitter = SentenceTransformersTokenTextSplitter(
     chunk_size=512,
     chunk_overlap=50
 )
