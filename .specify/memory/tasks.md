@@ -5,57 +5,57 @@
 
 ---
 
-## Phase 1: Foundation (Week 1-2)
+## Phase 1: Foundation (Week 1-2) ✅ COMPLETE
 
 ### Project Setup
-- [ ] **[T1-001]** Create project structure (src/, tests/, config.yaml, pyproject.toml)
-- [ ] **[T1-002]** Initialize Python package (src/ti_docs_mcp/__init__.py)
-- [ ] **[T1-003]** Setup PyPI packaging (setup.py, pyproject.toml with metadata)
-- [ ] **[T1-004]** Add CLI entry point (console_scripts in pyproject.toml)
+- [X] **[T1-001]** Create project structure (src/, tests/, config.yaml, pyproject.toml)
+- [X] **[T1-002]** Initialize Python package (src/ti_docs_mcp/__init__.py)
+- [X] **[T1-003]** Setup PyPI packaging (setup.py, pyproject.toml with metadata)
+- [X] **[T1-004]** Add CLI entry point (console_scripts in pyproject.toml)
 
 ### MCP Server Skeleton
-- [ ] **[T1-005]** Initialize MCP server with mcp-python SDK
-- [ ] **[T1-006]** Implement stdio transport
-- [ ] **[T1-007]** Create tool definitions (5 tools with stub implementations)
-- [ ] **[T1-008]** Implement server main() function
-- [ ] **[T1-009]** Add error handling for MCP protocol errors
+- [X] **[T1-005]** Initialize MCP server with mcp-python SDK
+- [X] **[T1-006]** Implement stdio transport
+- [X] **[T1-007]** Create tool definitions (5 tools with stub implementations)
+- [X] **[T1-008]** Implement server main() function
+- [X] **[T1-009]** Add error handling for MCP protocol errors
 
 ### Testing Setup
-- [ ] **[T1-010]** Setup pytest configuration
-- [ ] **[T1-011]** Create test skeleton (test_tools.py, test_server.py)
-- [ ] **[T1-012]** Add pytest-asyncio for async testing
-- [ ] **[T1-013]** Write unit tests for MCP server start/stop
+- [X] **[T1-010]** Setup pytest configuration
+- [X] **[T1-011]** Create test skeleton (test_tools.py, test_server.py)
+- [X] **[T1-012]** Add pytest-asyncio for async testing
+- [X] **[T1-013]** Write unit tests for MCP server start/stop
 
 ---
 
 ## Phase 2: Index Layer (Week 2-3)
 
 ### Document Download
-- [ ] **[T2-001]** Implement TI doc downloader with httpx
-- [ ] **[T2-002]** Parse TI sitemap for URL discovery
-- [ ] **[T2-003]** Implement 4-second crawl delay (respect robots.txt)
-- [ ] **[T2-004]** Add retry logic for failed downloads
-- [ ] **[T2-005]** Filter by TDA4 product family
+- [X] **[T2-001]** Implement TI doc downloader with httpx
+- [X] **[T2-002]** Parse TI sitemap for URL discovery
+- [X] **[T2-003]** Implement 4-second crawl delay (respect robots.txt)
+- [X] **[T2-004]** Add retry logic for failed downloads
+- [X] **[T2-005]** Filter by TDA4 product family
 
 ### Content Parsing
-- [ ] **[T2-006]** Parse HTML with BeautifulSoup (datasheets, user guides)
+- [X] **[T2-006]** Parse HTML with BeautifulSoup (datasheets, user guides)
 - [ ] **[T2-007]** Parse PDF with pypdf2 (app notes, reference designs)
-- [ ] **[T2-008]** Extract metadata (title, type, family, part_number, URLs)
-- [ ] **[T2-009]** Clean and normalize text content
-- [ ] **[T2-010]** Deduplicate documents by URL
+- [X] **[T2-008]** Extract metadata (title, type, family, part_number, URLs)
+- [X] **[T2-009]** Clean and normalize text content
+- [X] **[T2-010]** Deduplicate documents by URL
 
 ### Vector Index
-- [ ] **[T2-011]** Integrate OpenAI embeddings API (text-embedding-3-small)
-- [ ] **[T2-012]** Setup ChromaDB (or LanceDB) for vector storage
-- [ ] **[T2-013]** Implement batch embedding generation (100 docs/batch)
-- [ ] **[T2-014]** Store embeddings with metadata in vector DB
-- [ ] **[T2-015]** Implement index persistence (save/load from disk)
+- [X] **[T2-011]** Integrate sentence-transformers for local embeddings (all-MiniLM-L6-v2)
+- [X] **[T2-012]** Setup ChromaDB (or LanceDB) for vector storage
+- [X] **[T2-013]** Implement batch embedding generation (100 docs/batch)
+- [X] **[T2-014]** Store embeddings with metadata in vector DB
+- [X] **[T2-015]** Implement index persistence (save/load from disk)
 
 ### CLI Index Management
-- [ ] **[T2-016]** Implement `ti-docs-mcp index` CLI command
-- [ ] **[T2-017]** Add `--family` flag for product family
+- [X] **[T2-016]** Implement `ti-docs-mcp index` CLI command
+- [X] **[T2-017]** Add `--family` flag for product family
 - [ ] **[T2-018]** Add `--update` flag for incremental index
-- [ ] **[T2-019]** Add `--clear` flag to reset index
+- [X] **[T2-019]** Add `--clear` flag to reset index
 - [ ] **[T2-020]** Test indexing with TDA4 docs
 
 ---
