@@ -84,11 +84,22 @@ Answer technical questions using TI documentation.
 
 - **Language:** Python 3.8+
 - **MCP Protocol:** mcp-python SDK
-- **Embeddings:** OpenAI text-embedding-3-small
-- **Vector Store:** ChromaDB or LanceDB
+- **Embeddings (Text):** sentence-transformers (all-MiniLM-L6-v2) - Local, fast, zero API cost
+- **Embeddings (Code):** microsoft/codebert-base - Local, code-aware
+- **Vector Store:** ChromaDB with HNSW indexing
+- **Reranker (Optional):** ms-marco-MiniLM-L-6-v2 - For better Q&A accuracy
+- **PDF Parsing:** pymupdf4llm or pdfplumber
 - **CLI:** Click or Typer
 - **Testing:** pytest + pytest-asyncio
 - **LLM:** GLM 4.7 (via Zai API)
+
+**Key Benefits:**
+- **Privacy:** No data sent to external APIs for embeddings
+- **Cost:** Zero API costs for embeddings
+- **Offline:** Works without internet
+- **Fast:** ~50ms per document embedding
+
+**See [RAG_STRATEGY.md](./RAG_STRATEGY.md)** for detailed RAG system design per data type
 
 ## Current Status
 
