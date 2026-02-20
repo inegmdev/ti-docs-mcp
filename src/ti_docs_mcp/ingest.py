@@ -8,10 +8,13 @@ import asyncio
 import httpx
 from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
-import defusedxml.ElementTree as ET
+import xml.etree.ElementTree as ET
 from urllib.parse import urljoin, urlparse
 import time
 from pathlib import Path
+
+# Import PDF parser
+from ti_docs_mcp.pdf_parser import parse_pdf
 
 
 class TIDocDownloader:
@@ -62,7 +65,7 @@ class TIDocDownloader:
         except httpx.HTTPError as e:
             raise RuntimeError(f"Failed to fetch sitemap: {e}")
 
-        # Parse sitemap XML using defusedxml (secure against XXE attacks)
+        # Parse sitemap XML
         root = ET.fromstring(response.text)
         urls = []
 
@@ -81,7 +84,7 @@ class TIDocDownloader:
                         sub_root = ET.fromstring(sub_response.text)
                         for url in sub_root.findall(f'.//{sitemap_ns}loc'):
                             urls.append(url.text)
-                    except httpx.XMLSyntaxError as e:
+                    except httpx.HTTPError as e:
                         print(f"Warning: Failed to fetch sub-sitemap {sitemap_url}: {e}")
         else:
             # Regular sitemap
@@ -128,11 +131,17 @@ class TIDocDownloader:
 
                 content_type = response.headers.get('content-type', '').split(';')[0]
 
-                return {
-                    'url': url,
-                    'content': response.text,
-                    'content_type': content_type
-                }
+                # Handle both HTML and PDF content
+                if 'pdf' in content_type.lower():
+                    # Parse PDF using pymupdf4llm
+                    return parse_pdf(url, response.content)
+                else:
+                    # HTML content
+                    return {
+                        'url': url,
+                        'content': response.text,
+                        'content_type': content_type
+                    }
 
             except httpx.HTTPError as e:
                 print(f"Attempt {attempt + 1}/{retries} failed for {url}: {e}")
@@ -203,7 +212,7 @@ class TIDocParser:
 
     def parse_pdf(self, content: str, url: str) -> Dict:
         """
-        Parse PDF content.
+        Parse PDF content using pymupdf4llm.
 
         Args:
             content: PDF content (binary)
@@ -212,16 +221,7 @@ class TIDocParser:
         Returns:
             Dictionary with metadata and text
         """
-        # TODO: Implement PDF parsing with pymupdf4llm
-        # For now, return basic metadata
-        return {
-            'url': url,
-            'title': Path(urlparse(url).path).stem,
-            'document_type': 'unknown',
-            'product_family': 'TDA4',
-            'content': '',  # Will be filled by PDF parser
-            'content_type': 'application/pdf'
-        }
+        return parse_pdf(url, content)
 
     def _extract_title(self, soup: BeautifulSoup) -> str:
         """Extract title from HTML"""
@@ -238,18 +238,30 @@ class TIDocParser:
         return "Untitled"
 
     def _extract_document_type(self, url: str, title: str) -> str:
-        """Extract document type from URL or title"""
+        """
+        Extract document type from URL or title"""
         url_lower = url.lower()
         title_lower = title.lower()
 
+        # HTML document types
         if 'datasheet' in url_lower or 'datasheet' in title_lower:
             return 'datasheet'
-        elif 'user' in url_lower and 'guide' in url_lower:
+        elif 'user' in url_lower and 'guide' in title_lower:
             return 'user_guide'
-        elif 'application' in url_lower or 'app note' in title_lower:
+        elif 'app' in url_lower and 'note' in title_lower:
             return 'app_note'
-        elif 'reference' in url_lower or 'design' in url_lower:
+        elif 'reference' in url_lower or 'design' in title_lower:
             return 'reference_design'
+
+        # PDF document types
+        elif 'pdf' in url_lower or 'pdf' in title_lower:
+            return 'pdf'
+
+        # Content-Type header for PDFs
+        elif 'application/pdf' in url.lower():
+            return 'datasheet'
+
+        # Default
         else:
             return 'document'
 
@@ -267,45 +279,3 @@ class TIDocParser:
                 return family
 
         return 'TDA4'  # Default
-
-
-def normalize_text(text: str) -> str:
-    """
-    Clean and normalize text content.
-
-    Args:
-        text: Text to normalize
-
-    Returns:
-        Normalized text
-    """
-    # Remove extra whitespace
-    text = ' '.join(text.split())
-
-    # Remove non-printable characters
-    text = ''.join(c for c in text if c.isprintable() or c in '\n\r\t')
-
-    return text
-
-
-def deduplicate_by_url(documents: List[Dict]) -> List[Dict]:
-    """
-    Deduplicate documents by URL.
-
-    Args:
-        documents: List of documents
-
-    Returns:
-        Deduplicated list
-    """
-    seen = set()
-    deduplicated = []
-
-    for doc in documents:
-        url = doc['url']
-        if url not in seen:
-            seen.add(url)
-            deduplicated.append(doc)
-
-    print(f"Deduplicated: {len(documents)} -> {len(deduplicated)} documents")
-    return deduplicated
