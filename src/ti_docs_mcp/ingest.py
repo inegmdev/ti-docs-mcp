@@ -69,20 +69,24 @@ class TIDocDownloader:
         # Handle both sitemap index and regular sitemap
         if root.tag.endswith('sitemapindex'):
             # Sitemap index - fetch all child sitemaps
-            for sitemap in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}sitemap'):
-                sitemap_url = sitemap.get('loc')
-                print(f"Fetching sub-sitemap: {sitemap_url}")
-                try:
-                    sub_response = await self.client.get(sitemap_url)
-                    sub_response.raise_for_status()
-                    sub_root = ET.fromstring(sub_response.text)
-                    for url in sub_root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
-                        urls.append(url.text)
-                except httpx.HTTPError as e:
-                    print(f"Warning: Failed to fetch sub-sitemap {sitemap_url}: {e}")
+            sitemap_ns = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+            for sitemap in root.findall(f'.//{sitemap_ns}sitemap'):
+                # Use .text attribute or findtext() to get text content
+                sitemap_url = sitemap.text
+                if sitemap_url:
+                    print(f"Fetching sub-sitemap: {sitemap_url}")
+                    try:
+                        sub_response = await self.client.get(sitemap_url)
+                        sub_response.raise_for_status()
+                        sub_root = ET.fromstring(sub_response.text)
+                        for url in sub_root.findall(f'.//{sitemap_ns}loc'):
+                            urls.append(url.text)
+                    except httpx.HTTPError as e:
+                        print(f"Warning: Failed to fetch sub-sitemap {sitemap_url}: {e}")
         else:
             # Regular sitemap
-            for url in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
+            sitemap_ns = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+            for url in root.findall(f'.//{sitemap_ns}loc'):
                 urls.append(url.text)
 
         print(f"Discovered {len(urls)} URLs from sitemap")
