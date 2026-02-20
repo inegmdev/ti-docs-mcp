@@ -14,7 +14,7 @@ try:
     mcp = FastMCP("ti-docs-mcp")
     HAS_FASTMCP = True
 except ImportError:
-    from mcp.server import stdio_server
+    from mcp.server import stdio_server, Server
     from mcp.server.models import InitializationOptions
     HAS_FASTMCP = False
 
@@ -293,16 +293,29 @@ async def main():
         # Tools already registered via decorators
         mcp.run()
     else:
-        # Use stdio_server
-        server = stdio_server()
-        register_tools(server)
-        await server.run(
-            "ti-docs-mcp",
-            "1.0.0",
-            InitializationOptions(
-                server_name="ti-docs-mcp"
+        # Use stdio_server as async context manager
+        async with stdio_server() as (read_stream, write_stream):
+            # Create and configure MCP server with streams
+            # Create server instance
+            server = Server(
+                "ti-docs-mcp",
+                "1.0.0",
+                InitializationOptions(
+                    server_name="ti-docs-mcp"
+                )
             )
-        )
+
+            # Register tools with server
+            register_tools(server)
+
+            # Run server with acquired streams
+            await server.run(
+                read_stream,
+                write_stream,
+                InitializationOptions(
+                    server_name="ti-docs-mcp"
+                )
+            )
 
 
 # Export for CLI
