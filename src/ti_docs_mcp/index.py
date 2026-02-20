@@ -8,6 +8,30 @@ import chromadb
 from chromadb.config import Settings
 from typing import List, Dict, Optional, Any
 from pathlib import Path
+import hashlib
+
+
+def generate_doc_id(doc: Dict) -> str:
+    """
+    Generate a stable, deterministic ID from document URL.
+
+    This ensures idempotency - re-indexing the same document
+    will produce the same ID.
+
+    Args:
+        doc: Document dictionary with 'url' field
+
+    Returns:
+        Stable ID string (SHA256 hash of URL)
+    """
+    url = doc.get('url', '')
+    if not url:
+        # Fallback to title if URL is missing
+        title = doc.get('title', 'unknown')
+        return hashlib.sha256(title.encode()).hexdigest()[:16]
+
+    # Generate stable ID from URL
+    return hashlib.sha256(url.encode()).hexdigest()[:16]
 
 
 class VectorIndex:
@@ -54,7 +78,8 @@ class VectorIndex:
         """
         print(f"Adding {len(documents)} documents to index...")
 
-        ids = [doc.get('id', f"doc_{i}") for i, doc in enumerate(documents)]
+        # Generate stable, deterministic IDs from document URLs
+        ids = [doc.get('id', generate_doc_id(doc)) for doc in documents]
 
         # Prepare metadata (filter out 'content' and 'embedding')
         metadatas = []
