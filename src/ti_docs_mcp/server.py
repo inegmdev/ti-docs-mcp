@@ -290,7 +290,8 @@ async def main():
 
     # Register tools and run server
     if HAS_FASTMCP:
-        # Tools already registered via decorators
+        # FastMCP: Register tools via decorators, then run
+        register_tools(mcp)  # Register tool functions with mcp instance
         mcp.run()
     else:
         # Use stdio_server as async context manager
