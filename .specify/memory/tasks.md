@@ -5,57 +5,57 @@
 
 ---
 
-## Phase 1: Foundation (Week 1-2)
+## Phase 1: Foundation (Week 1-2) ✅ COMPLETE
 
 ### Project Setup
-- [ ] **[T1-001]** Create project structure (src/, tests/, config.yaml, pyproject.toml)
-- [ ] **[T1-002]** Initialize Python package (src/ti_docs_mcp/__init__.py)
-- [ ] **[T1-003]** Setup PyPI packaging (setup.py, pyproject.toml with metadata)
-- [ ] **[T1-004]** Add CLI entry point (console_scripts in pyproject.toml)
+- [X] **[T1-001]** Create project structure (src/, tests/, config.yaml, pyproject.toml)
+- [X] **[T1-002]** Initialize Python package (src/ti_docs_mcp/__init__.py)
+- [X] **[T1-003]** Setup PyPI packaging (setup.py, pyproject.toml with metadata)
+- [X] **[T1-004]** Add CLI entry point (console_scripts in pyproject.toml)
 
 ### MCP Server Skeleton
-- [ ] **[T1-005]** Initialize MCP server with mcp-python SDK
-- [ ] **[T1-006]** Implement stdio transport
-- [ ] **[T1-007]** Create tool definitions (5 tools with stub implementations)
-- [ ] **[T1-008]** Implement server main() function
-- [ ] **[T1-009]** Add error handling for MCP protocol errors
+- [X] **[T1-005]** Initialize MCP server with mcp-python SDK
+- [X] **[T1-006]** Implement stdio transport
+- [X] **[T1-007]** Create tool definitions (5 tools with stub implementations)
+- [X] **[T1-008]** Implement server main() function
+- [X] **[T1-009]** Add error handling for MCP protocol errors
 
 ### Testing Setup
-- [ ] **[T1-010]** Setup pytest configuration
-- [ ] **[T1-011]** Create test skeleton (test_tools.py, test_server.py)
-- [ ] **[T1-012]** Add pytest-asyncio for async testing
-- [ ] **[T1-013]** Write unit tests for MCP server start/stop
+- [X] **[T1-010]** Setup pytest configuration
+- [X] **[T1-011]** Create test skeleton (test_tools.py, test_server.py)
+- [X] **[T1-012]** Add pytest-asyncio for async testing
+- [X] **[T1-013]** Write unit tests for MCP server start/stop
 
 ---
 
 ## Phase 2: Index Layer (Week 2-3)
 
 ### Document Download
-- [ ] **[T2-001]** Implement TI doc downloader with httpx
-- [ ] **[T2-002]** Parse TI sitemap for URL discovery
-- [ ] **[T2-003]** Implement 4-second crawl delay (respect robots.txt)
-- [ ] **[T2-004]** Add retry logic for failed downloads
-- [ ] **[T2-005]** Filter by TDA4 product family
+- [X] **[T2-001]** Implement TI doc downloader with httpx
+- [X] **[T2-002]** Parse TI sitemap for URL discovery
+- [X] **[T2-003]** Implement 4-second crawl delay (respect robots.txt)
+- [X] **[T2-004]** Add retry logic for failed downloads
+- [X] **[T2-005]** Filter by TDA4 product family
 
 ### Content Parsing
-- [ ] **[T2-006]** Parse HTML with BeautifulSoup (datasheets, user guides)
+- [X] **[T2-006]** Parse HTML with BeautifulSoup (datasheets, user guides)
 - [ ] **[T2-007]** Parse PDF with pypdf2 (app notes, reference designs)
-- [ ] **[T2-008]** Extract metadata (title, type, family, part_number, URLs)
-- [ ] **[T2-009]** Clean and normalize text content
-- [ ] **[T2-010]** Deduplicate documents by URL
+- [X] **[T2-008]** Extract metadata (title, type, family, part_number, URLs)
+- [X] **[T2-009]** Clean and normalize text content
+- [X] **[T2-010]** Deduplicate documents by URL
 
 ### Vector Index
-- [ ] **[T2-011]** Integrate OpenAI embeddings API (text-embedding-3-small)
-- [ ] **[T2-012]** Setup ChromaDB (or LanceDB) for vector storage
-- [ ] **[T2-013]** Implement batch embedding generation (100 docs/batch)
-- [ ] **[T2-014]** Store embeddings with metadata in vector DB
-- [ ] **[T2-015]** Implement index persistence (save/load from disk)
+- [X] **[T2-011]** Integrate sentence-transformers for local embeddings (all-MiniLM-L6-v2)
+- [X] **[T2-012]** Setup ChromaDB (or LanceDB) for vector storage
+- [X] **[T2-013]** Implement batch embedding generation (100 docs/batch)
+- [X] **[T2-014]** Store embeddings with metadata in vector DB
+- [X] **[T2-015]** Implement index persistence (save/load from disk)
 
 ### CLI Index Management
-- [ ] **[T2-016]** Implement `ti-docs-mcp index` CLI command
-- [ ] **[T2-017]** Add `--family` flag for product family
+- [X] **[T2-016]** Implement `ti-docs-mcp index` CLI command
+- [X] **[T2-017]** Add `--family` flag for product family
 - [ ] **[T2-018]** Add `--update` flag for incremental index
-- [ ] **[T2-019]** Add `--clear` flag to reset index
+- [X] **[T2-019]** Add `--clear` flag to reset index
 - [ ] **[T2-020]** Test indexing with TDA4 docs
 
 ---
@@ -63,43 +63,43 @@
 ## Phase 3: Tool Implementation (Week 3-4)
 
 ### Tool: ti_search
-- [ ] **[T3-001]** Implement `ti_search` tool with MCP decorator
-- [ ] **[T3-002]** Generate query embedding
-- [ ] **[T3-003]** Search vector DB with filters (document_type, product_family)
-- [ ] **[T3-004]** Rank results by relevance score
-- [ ] **[T3-005]** Limit to max_results parameter
-- [ ] **[T3-006]** Return structured response (title, url, type, snippet, score)
+- [X] **[T3-001]** Implement `ti_search` tool with MCP decorator
+- [X] **[T3-002]** Generate query embedding
+- [X] **[T3-003]** Search vector DB with filters (document_type, product_family)
+- [X] **[T3-004]** Rank results by relevance score
+- [X] **[T3-005]** Limit to max_results parameter
+- [X] **[T3-006]** Return structured response (title, url, type, snippet, score)
 - [ ] **[T3-007]** Add input validation
 - [ ] **[T3-008]** Write unit tests
 
 ### Tool: component_lookup
-- [ ] **[T3-009]** Implement `component_lookup` tool
-- [ ] **[T3-010]** Exact match search by part_number
-- [ ] **[T3-011]** Fallback to prefix match
-- [ ] **[T3-012]** Return component details (name, family, datasheet_url, user_guide_url, features)
-- [ ] **[T3-013]** Handle invalid part numbers with error
+- [X] **[T3-009]** Implement `component_lookup` tool
+- [X] **[T3-010]** Exact match search by part_number
+- [X] **[T3-011]** Fallback to prefix match
+- [X] **[T3-012]** Return component details (name, family, datasheet_url, user_guide_url, features)
+- [X] **[T3-013]** Handle invalid part numbers with error
 - [ ] **[T3-014]** Write unit tests
 
 ### Tool: product_info
-- [ ] **[T3-015]** Implement `product_info` tool
-- [ ] **[T3-016]** Search TDA4 product database by name
-- [ ] **[T3-017]** Return product overview (description, applications, variants)
-- [ ] **[T3-018]** Return related products
+- [X] **[T3-015]** Implement `product_info` tool
+- [X] **[T3-016]** Search TDA4 product database by name
+- [X] **[T3-017]** Return product overview (description, applications, variants)
+- [X] **[T3-018]** Return related products
 - [ ] **[T3-019]** Write unit tests
 
 ### Tool: sdk_search
-- [ ] **[T3-020]** Implement `sdk_search` tool
-- [ ] **[T3-021]** Filter SDK docs by sdk_name
-- [ ] **[T3-022]** Semantic search within SDK documents
-- [ ] **[T3-023]** Return function/API results (name, description, parameters, example, url)
-- [ ] **[T3-024]** Filter by api_version if provided
+- [X] **[T3-020]** Implement `sdk_search` tool
+- [X] **[T3-021]** Filter SDK docs by sdk_name
+- [X] **[T3-022]** Semantic search within SDK documents
+- [X] **[T3-023]** Return function/API results (name, description, parameters, example, url)
+- [X] **[T3-024]** Filter by api_version if provided
 - [ ] **[T3-025]** Write unit tests
 
 ### Tool: ti_question
-- [ ] **[T3-026]** Implement `ti_question` tool (RAG stub for now)
-- [ ] **[T3-027]** Define response structure (answer, sources, confidence, related)
+- [X] **[T3-026]** Implement `ti_question` tool (RAG stub for now)
+- [X] **[T3-027]** Define response structure (answer, sources, confidence, related)
 - [ ] **[T3-028]** Write unit tests (mock RAG)
-- [ ] **[T3-029]** Integrate GLM 4.7 in Phase 4
+- [X] **[T3-029]** Integrate GLM 4.7 in Phase 4
 
 ---
 
