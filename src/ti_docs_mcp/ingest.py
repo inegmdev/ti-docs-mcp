@@ -27,13 +27,25 @@ class TIDocDownloader:
         """
         self.sitemap_url = sitemap_url
         self.crawl_delay = crawl_delay
-        self.client = httpx.AsyncClient(
-            timeout=30.0,
-            follow_redirects=True,
-            headers={
-                'User-Agent': 'Mozilla/5.0 (compatible; ti-docs-mcp/1.0)'
-            }
-        )
+        self.client = None  # Will be created in __aenter__ for lazy initialization
+
+    async def __aenter__(self):
+        """Async context manager entry - initialize httpx client."""
+        if self.client is None:
+            self.client = httpx.AsyncClient(
+                timeout=30.0,
+                follow_redirects=True,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (compatible; ti-docs-mcp/1.0)'
+                }
+            )
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - close httpx client."""
+        if self.client is not None:
+            await self.client.aclose()
+            self.client = None
 
     async def discover_urls(self) -> List[str]:
         """

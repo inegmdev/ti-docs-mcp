@@ -25,23 +25,22 @@ def cmd_index(args):
     from ti_docs_mcp.index import get_documents_index
 
     async def run_index():
-        # Initialize downloader
-        downloader = TIDocDownloader(
+        # Initialize downloader using async context manager
+        async with TIDocDownloader(
             sitemap_url="https://e2e.ti.com/sitemapindex-standard.xml",
             crawl_delay=4.0
-        )
+        ) as downloader:
+            # Discover URLs
+            urls = await downloader.discover_urls()
 
-        # Discover URLs
-        urls = await downloader.discover_urls()
+            # Filter by product family
+            if args.family:
+                urls = downloader.filter_tda4_urls(urls, family=args.family)
+            else:
+                urls = downloader.filter_tda4_urls(urls)
 
-        # Filter by product family
-        if args.family:
-            urls = downloader.filter_tda4_urls(urls, family=args.family)
-        else:
-            urls = downloader.filter_tda4_urls(urls)
-
-        # Download documents
-        downloaded = await downloader.download_batch(urls[:args.max_docs])
+            # Download documents
+            downloaded = await downloader.download_batch(urls[:args.max_docs])
 
         # Parse documents (HTML only for now)
         parser = TIDocParser()
