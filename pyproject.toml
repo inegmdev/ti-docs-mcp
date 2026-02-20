@@ -1,34 +1,63 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0.0", "setuptools_scm>=7.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ti-docs-mcp"
 version = "1.0.0"
-description = "TI Documentation MCP Server - Search Texas Instruments documentation with semantic queries"
+description = "TI Documentation MCP Server - Search TI docs with semantic queries and RAG"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-    {name = "OpenClaw", email = "openclaw@example.com"}
+    {name = "Islam Negm", email = "inegmdev@users.noreply.github.com"}
 ]
 
 keywords = [
     "mcp",
     "model-context-protocol",
     "texas-instruments",
+    "ti",
+    "texas-instruments-docs",
+    "texas-instruments-embedded",
+    "texas-instruments-microcontroller",
+    "texas-instruments-processor",
+    "texas-instruments-dsp",
+    "texas-instruments-arm",
+    "texas-instruments-c2000",
+    "texas-instruments-mpu",
     "documentation",
     "semantic-search",
     "rag",
-    "glm"
+    "retrieval-augmented-generation",
+    "vector-search",
+    "vector-database",
+    "chromadb",
+    "embeddings",
+    "local-embeddings",
+    "llm",
+    "glm",
+    "glm-4.7",
+    "question-answering",
+    "technical-support",
+    "datasheet",
+    "api-docs",
+    "sdk-docs"
+    "mcp-server"
 ]
 
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
+    "Development Status :: 4 - Alpha",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Documentation",
     "Topic :: Scientific/Engineering :: Embedded Systems",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Typing :: Typed",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Framework :: Model Context Protocol",
 ]
 
 dependencies = [
@@ -50,27 +79,13 @@ dev = [
     "mypy>=1.7.0",
 ]
 
-[project.scripts]
-# Development scripts
-dev = "pytest"
+[project.urls]
+Homepage = "https://github.com/inegmdev/ti-docs-mcp"
+Documentation = "https://github.com/inegmdev/ti-docs-mcp#readme"
+Repository = "https://github.com/inegmdev/ti-docs-mcp.git"
+Issues = "https://github.com/inegmdev/ti-docs-mcp/issues"
+Changelog = "https://github.com/inegmdev/ti-docs-mcp/blob/main/CHANGELOG.md"
 
-[project.gui-scripts]
+[project.scripts]
 # MCP server entry point
 ti-docs-mcp = "ti_docs_mcp.cli:main"
-
-[project.urls]
-Homepage = "https://github.com/openclaw/ti-docs-mcp"
-Documentation = "https://github.com/openclaw/ti-docs-mcp#readme"
-Repository = "https://github.com/openclaw/ti-docs-mcp"
-
-[tool.setuptools]
-packages = ["ti_docs_mcp"]
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
-
-[tool.coverage.run]
-source = ["."]
-omit = ["tests/*"]
-branch = true
