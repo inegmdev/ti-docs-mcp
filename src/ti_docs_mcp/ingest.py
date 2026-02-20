@@ -8,7 +8,7 @@ import asyncio
 import httpx
 from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from urllib.parse import urljoin, urlparse
 import time
 from pathlib import Path
@@ -62,7 +62,7 @@ class TIDocDownloader:
         except httpx.HTTPError as e:
             raise RuntimeError(f"Failed to fetch sitemap: {e}")
 
-        # Parse sitemap XML
+        # Parse sitemap XML using defusedxml (secure against XXE attacks)
         root = ET.fromstring(response.text)
         urls = []
 
@@ -81,7 +81,7 @@ class TIDocDownloader:
                         sub_root = ET.fromstring(sub_response.text)
                         for url in sub_root.findall(f'.//{sitemap_ns}loc'):
                             urls.append(url.text)
-                    except httpx.HTTPError as e:
+                    except httpx.XMLSyntaxError as e:
                         print(f"Warning: Failed to fetch sub-sitemap {sitemap_url}: {e}")
         else:
             # Regular sitemap
