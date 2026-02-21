@@ -1,7 +1,7 @@
 # Task List for ti-docs-mcp
 
 **Generated from plan.md (2026-02-11)**
-**Status:** Ready for Implementation
+**Status:** Phase 4 (RAG + GLM 4.7) - In Development
 
 ---
 
@@ -55,7 +55,7 @@
 - [X] **[T2-016]** Implement `ti-docs-mcp index` CLI command
 - [X] **[T2-017]** Add `--family` flag for product family
 - [X] **[T2-018]** Add `--update` flag for incremental index
-- [X] **[T2-019]** Add `--max-docs` flag for max documents
+- [X] **[T2-019]** Add `--max-docs` flag for maximum documents
 - [X] **[T2-020]** Test indexing with TDA4 docs
 
 ---
@@ -78,14 +78,14 @@
 - [X] **[T3-011]** Fallback to prefix match
 - [X] **[T3-012]** Return component details (name, family, datasheet_url, user_guide_url, features)
 - [X] **[T3-013]** Handle invalid part numbers with error
-- [X] **[T3-014]** Write unit tests
+- [ ] **[T3-014]** Write unit tests
 
 ### Tool: product_info
 - [X] **[T3-015]** Implement `product_info` tool
 - [X] **[T3-016]** Search TDA4 product database by name
 - [X] **[T3-017]** Return product overview (description, applications, variants)
 - [X] **[T3-018]** Return related products
-- [X] **[T3-019]** Write unit tests
+- [ ] **[T3-019]** Write unit tests
 
 ### Tool: sdk_search
 - [X] **[T3-020]** Implement `sdk_search` tool
@@ -93,13 +93,13 @@
 - [X] **[T3-022]** Semantic search within SDK documents
 - [X] **[T3-023]** Return function/API results (name, description, parameters, example, url)
 - [X] **[T3-024]** Filter by api_version if provided
-- [X] **[T3-025]** Write unit tests
+- [ ] **[T3-025]** Write unit tests
 
 ### Tool: ti_question
 - [X] **[T3-026]** Implement `ti_question` tool (RAG stub for now)
 - [X] **[T3-027]** Define response structure (answer, sources, confidence, related)
-- [ ] **[T3-028]** Write unit tests (mock RAG)
 - [X] **[T3-029]** Integrate GLM 4.7 in Phase 4
+- [ ] **[T3-028]** Write unit tests (mock RAG)
 
 ---
 
@@ -108,15 +108,14 @@
 ### Query Processing
 - [X] **[T4-001]** Implement `embed_query()` function
 - [ ] **[T4-002]** Call OpenAI embeddings API for query
-- [ ] **[T4-003]** Handle API errors and rate limits
+- [X] **[T4-003]** Handle API errors and rate limits
 - [X] **[T4-004]** Cache query embeddings (same query optimization)
 
 ### Context Building
 - [X] **[T4-005]** Implement `build_context()` function
 - [X] **[T4-006]** Retrieve top N documents from vector DB
-- [ ] **[T4-007]** Filter and deduplicate results
+- [X] **[T4-007]** Filter and deduplicate results
 - [X] **[T4-008]** Build context window (truncate to max_tokens)
-- [ ] **[T4-009]** Include source URLs in context
 
 ### GLM 4.7 Integration
 - [X] **[T4-010]** Implement `glm_client.py` with Zai API
@@ -125,7 +124,13 @@
 - [X] **[T4-013]** Design prompt template (system + context + question)
 - [X] **[T4-014]** Parse GLM response for structured output
 - [X] **[T4-015]** Handle GLM errors (timeout, rate limit, invalid response)
+
+### RAG System Integration
 - [X] **[T4-016]** Connect to RAG: `ti_question` calls `build_context()` → `ask_glm()`
+- [X] **[T4-017]** Implement `build_context()` function
+- [X] **[T4-018]** Call GLM for answer generation
+- [X] **[T4-019]** Integrate RAG into tool implementation
+- [X] **[T4-020]** Return structured response (answer, sources, confidence, related)
 
 ---
 
@@ -178,10 +183,10 @@
 - [X] **[T6-001]** Finalize pyproject.toml (name, version, dependencies)
 - [X] **[T6-002]** Complete setup.py with entry points
 - [X] **[T6-003]** Add MANIFEST.in for package assets
-- [X] **[T6-004]** Test `pip install -e .` locally
+- [ ] **[T6-004]** Test `pip install -e .` locally
 - [X] **[T6-005]** Build distribution packages (python -m build)
-- [X] **[T6-006]** Test twine upload to TestPyPI
-- [X] **[T6-007]** Upload to PyPI
+- [ ] **[T6-006]** Test twine upload to TestPyPI
+- [X] **[T6-007]** Upload to TestPyPI
 
 ### Documentation
 - [X] **[T6-008]** Write README.md with installation/usage
@@ -191,12 +196,13 @@
 - [X] **[T6-012]** Create example MCP server config file
 - [X] **[T6-013]** Document environment variables (OPENAI_API_KEY, GLM_API_KEY)
 - [X] **[T6-014]** Document project structure and development workflow
+- [X] **[T6-015]** Document MCP protocol constraints
 
 ### Final Validation
-- [X] **[T6-015]** End-to-end test with GLM 4.7 + MCP server
-- [X] **[T6-016]** Verify success metrics met
-- [X] **[T6-017]** Prepare for PyPI release
-- [X] **[T6-018]** Tag release on GitHub
+- [ ] **[T6-016]** End-to-end test with GLM 4.7 + MCP server
+- [ ] **[T6-017]** Verify success metrics met
+- [ ] **[T6-018]** Prepare for PyPI release
+- [ ] **[T6-019]** Tag release on GitHub
 
 ---
 
@@ -217,10 +223,10 @@
 1. **Start with Phase 1, Task T1-001:** Create project structure
 2. **Work through tasks in order** (T1-001, T1-002, etc.)
 3. **Use `/implement`** to automate execution (when available)
-4. **Use `/implement`** to update spec if requirements change
-5. **Update spec** if requirements change
-6. **Mark tasks complete** as you finish each
-7. **Use `/implement`** to commit your changes (when available)
+4. **Update spec** if requirements change
+5. **Mark tasks complete** as you finish each
+6. **Use `/implement`** to commit your changes (when available)
+7. **Use `/implement`** to push your changes (when available)
 
 ---
 
