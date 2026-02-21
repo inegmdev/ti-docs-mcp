@@ -4,60 +4,23 @@ RAG (Retrieval-Augmented Generation) Module for ti-docs-mcp
 Handles context building and GLM 4.7 integration.
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
+from datetime import datetime, timedelta
+from functools import lru_cache
 import httpx
 
 
 class RAGRetriever:
     """Retrieval-Augmented Generation system"""
 
-    def __init__(self, embedding_model, vector_index, max_context_tokens: int = 4000):
+    def __init__(self, max_context_tokens: int = 4000):
         """
         Initialize RAG retriever.
 
         Args:
-            embedding_model: Embedding model instance
-            vector_index: Vector database index
-            max_context_tokens: Maximum tokens for context window
+            max_context_tokens: Maximum tokens for context window (default: 4000)
         """
-        self.embedding_model = embedding_model
-        self.vector_index = vector_index
         self.max_context_tokens = max_context_tokens
-
-    def retrieve_context(self, query: str, top_k: int = 10,
-                      filters: Optional[Dict] = None) -> List[Dict]:
-        """
-        Retrieve relevant documents for query.
-
-        Args:
-            query: Search query
-            top_k: Number of documents to retrieve
-            filters: Metadata filters for search
-
-        Returns:
-            List of retrieved documents with metadata
-        """
-        # Generate query embedding
-        query_embedding = self.embedding_model.embed_query(query)
-
-        # Search vector database
-        results = self.vector_index.search(
-            query_embedding=query_embedding,
-            n_results=top_k,
-            where=filters
-        )
-
-        # Format results
-        documents = []
-        for i in range(len(results['ids'][0])):
-            documents.append({
-                'id': results['ids'][0][i],
-                'text': results['documents'][0][i],
-                'metadata': results['metadatas'][0][i],
-                'distance': results['distances'][0][i]
-            })
-
-        return documents
 
     def build_context_window(self, documents: List[Dict]) -> str:
         """
@@ -70,7 +33,7 @@ class RAGRetriever:
             Context string
         """
         # Simple concatenation for now
-        # TODO: Implement smarter context building with truncation
+        # TODO: Implement smarter context building with summarization
         context_parts = []
 
         for i, doc in enumerate(documents):
@@ -78,7 +41,16 @@ class RAGRetriever:
             context_parts.append(f"URL: {doc['metadata'].get('url', '')}")
             context_parts.append(f"{doc['text']}\n")
 
+        # Truncate to max tokens
         context = "\n".join(context_parts)
+
+        # Simple token counting (approximate: 4 chars per token)
+        tokens = len(context)
+        if tokens > self.max_context_tokens:
+            # Truncate to max tokens
+            # (This is approximate, for production use tiktoken or similar)
+            context = context[:self.max_context_tokens]
+
         return context
 
 
@@ -104,17 +76,17 @@ class GLMClient:
         )
 
     async def ask(self, question: str, context: str,
-                model: str = "glm-4.7") -> Dict:
+               model: str = "glm-4.7") -> Dict:
         """
         Ask GLM 4.7 a question with context.
 
         Args:
             question: User's question
-            context: Retrieved context from documents
+            context: Retrieved context
             model: Model to use
 
         Returns:
-            Dictionary with answer, sources, confidence
+            Dictionary with answer, sources, confidence, related_questions
         """
         # Build prompt
         prompt = self._build_prompt(question, context)
@@ -128,7 +100,7 @@ class GLMClient:
                     "messages": [
                         {
                             "role": "system",
-                            "content": "You are a Texas Instruments technical expert. Answer questions using only the provided TI documentation context."
+                            "content": "You are a Texas Instruments technical expert. Answer questions using only the provided TI documentation context. Be concise and accurate."
                         },
                         {
                             "role": "user",
@@ -144,14 +116,13 @@ class GLMClient:
             data = response.json()
 
             # Extract answer
-            answer = data['choices'][0]['message']['content']
-
             # TODO: Parse response to extract sources and confidence
-            # For now, return basic structure
+            answer = data.get('choices', [{}])[0].get('message', {}).get('content', '')
+
             return {
                 'answer': answer,
                 'sources': [],
-                'confidence': 0.8,
+                'confidence': 0.8,  # Default confidence
                 'related_questions': []
             }
 
@@ -169,7 +140,8 @@ class GLMClient:
         Returns:
             Prompt string
         """
-        prompt = f"""Using the following TI documentation context, answer the question.
+        if context:
+            prompt = f"""Using the following TI documentation context, answer the question.
 
 Context:
 {context}
@@ -179,26 +151,104 @@ Question: {question}
 Provide:
 1. Direct answer to the question
 2. Source document references (include URLs)
-3. Confidence score (0.0-1.0)
-4. 2-3 related follow-up questions
-"""
+3. Confidence score (0.0 to 1.0)
+4. 3 related follow-up questions
+
+Be concise and accurate."""
+        else:
+            prompt = f"""You are a Texas Instruments technical expert. Answer the question.
+
+Question: {question}
+
+Provide:
+1. Direct answer to the question
+2. If you don't know, say "I don't have enough information"
+3. Be concise and accurate
+
+Be concise and accurate."""
+
         return prompt
 
 
 class RAGSystem:
     """Complete RAG system with retrieval and generation"""
 
-    def __init__(self, embedding_model, vector_index, glm_client: GLMClient):
+    def __init__(self, retriever: RAGRetriever, glm_client: GLMClient):
         """
         Initialize RAG system.
 
         Args:
-            embedding_model: Embedding model instance
-            vector_index: Vector database index
+            retriever: Retrieval component
             glm_client: GLM API client
         """
-        self.retriever = RAGRetriever(embedding_model, vector_index)
+        self.retriever = retriever
         self.glm_client = glm_client
+
+    async def retrieve_documents(self, query: str, top_k: int = 10,
+                            filters: Optional[Dict] = None) -> List[Dict]:
+        """
+        Retrieve relevant documents for query.
+
+        Args:
+            query: Search query
+            top_k: Number of documents to retrieve
+            filters: Metadata filters
+
+        Returns:
+            List of retrieved documents
+        """
+        # Retrieve from retriever (needs index and embedding model)
+        return await self.retriever.retrieve_context(query, top_k=top_k, filters=filters)
+
+    def build_context_window(self, documents: List[Dict]) -> str:
+        """
+        Build context window from retrieved documents.
+
+        Args:
+            documents: Retrieved documents
+
+        Returns:
+            Context string
+        """
+        # Use retriever's context builder
+        return self.retriever.build_context_window(documents)
+
+    def extract_source_citations(self, documents: List[Dict]) -> List[Dict]:
+        """
+        Extract source citations from documents.
+
+        Args:
+            documents: Retrieved documents
+
+        Returns:
+            List of source dictionaries
+        """
+        sources = []
+        for doc in documents:
+            sources.append({
+                'title': doc.get('metadata', {}).get('title', 'Unknown'),
+                'url': doc.get('metadata', {}).get('url', ''),
+                'relevance': 1.0 - doc.get('distance', 0.0)
+            })
+        return sources
+
+    async def generate_related_questions(self, question: str) -> List[str]:
+        """
+        Generate related follow-up questions.
+
+        Args:
+            question: User's question
+
+        Returns:
+            List of related questions
+        """
+        # TODO: Implement smarter related question generation
+        # For now, return generic questions
+        return [
+            "What other TI components are related to this?",
+            "Can you provide more details about the specific feature?",
+            "Where can I find more information about this topic?"
+        ]
 
     async def answer_question(self, question: str, context_scope: Optional[str] = None,
                          top_k: int = 10) -> Dict:
@@ -207,40 +257,46 @@ class RAGSystem:
 
         Args:
             question: User's question
-            context_scope: Optional scope filter (e.g., "component", "sdk")
+            context_scope: Limit search to specific context
             top_k: Number of documents to retrieve
 
         Returns:
             Dictionary with answer, sources, confidence, related_questions
         """
-        # Build filters based on scope
-        filters = None
+        # Build filters based on context scope
+        filters = {}
         if context_scope:
-            filters = {"product_family": "TDA4"}
+            filters['context_scope'] = context_scope
 
         # Retrieve relevant documents
-        documents = self.retriever.retrieve_context(question, top_k=top_k, filters=filters)
-
-        if not documents:
-            return {
-                'answer': 'No relevant documentation found for this question.',
-                'sources': [],
-                'confidence': 0.0,
-                'related_questions': []
-            }
+        documents = await self.retrieve_documents(question, top_k=top_k, filters=filters)
 
         # Build context window
-        context = self.retriever.build_context_window(documents)
+        context = self.build_context_window(documents)
+
+        # Extract source citations
+        sources = self.extract_source_citations(documents)
 
         # Ask GLM for answer
         result = await self.glm_client.ask(question, context)
 
-        # Add sources from retrieved documents
-        result['sources'] = [
-            {'title': doc['metadata'].get('title', ''),
-             'url': doc['metadata'].get('url', ''),
-             'relevance': 1.0 - doc['distance']}
-            for doc in documents[:5]
-        ]
+        # Add sources to result
+        # TODO: Properly parse GLM response to extract sources
+        # For now, add document sources
+        result['sources'] = sources
+
+        # Calculate confidence based on retrieval quality
+        # Better matches = higher confidence
+        if documents:
+            # Average distance to top documents (0 = best, 1 = worst)
+            avg_distance = sum(doc['distance'] for doc in documents[:5]) / len(documents[:5])
+            confidence = max(0.0, 1.0 - avg_distance)
+            result['confidence'] = confidence
+        else:
+            result['confidence'] = 0.5
+
+        # Generate related questions
+        related_questions = await self.generate_related_questions(question)
+        result['related_questions'] = related_questions
 
         return result
